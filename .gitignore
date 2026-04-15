@@ -1,7 +1,7 @@
 # Airflow and Docker ignores
 logs/
 plugins/
-dags/*.py
+
 .env
 *.log
 __pycache__/
