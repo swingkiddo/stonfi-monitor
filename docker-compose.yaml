@@ -123,7 +123,7 @@ services:
     <<: *airflow-common
     command: api-server
     ports:
-      - "33101:8080"
+      - "8080:8080"
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/monitor/health"]
       interval: 30s
@@ -135,22 +135,6 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-  
-  metabase:
-    image: metabase/metabase:latest
-    ports:
-      - "33100:3000"
-    environment:
-      MB_DB_TYPE: postgres
-      MB_DB_DBNAME: airflow
-      MB_DB_PORT: 5432
-      MB_DB_USER: airflow
-      MB_DB_PASS: airflow
-      MB_DB_HOST: postgres
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: always
 
   airflow-scheduler:
     <<: *airflow-common
