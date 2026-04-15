@@ -176,7 +176,7 @@ services:
           export AIRFLOW_UID=$$(id -u)
         fi
         one_meg=1048576
-        mem_available=$$($$(getconf _PHYS_PAGES) * $$(getconf PAGE_SIZE) / one_meg))
+        mem_available=$$(($$(getconf _PHYS_PAGES) * $$(getconf PAGE_SIZE) / one_meg))
         cpus_available=$$(grep -cE 'cpu[0-9]+' /proc/stat)
         disk_available=$$(df / | tail -1 | awk '{print $$4}')
         warning_resources="false"
