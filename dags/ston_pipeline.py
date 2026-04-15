@@ -56,6 +56,7 @@ def transform(**context):
             }
         )
 
+    print("Transform pushing dex_stats:", [dex_stats])
     context["ti"].xcom_push(key="dex_stats", value=[dex_stats])
     context["ti"].xcom_push(key="pool_snapshots", value=pool_snapshots)
 
@@ -63,10 +64,41 @@ def transform(**context):
 def load(**context):
     dex_stats = context["ti"].xcom_pull(key="dex_stats")
     pool_snapshots = context["ti"].xcom_pull(key="pool_snapshots")
+    print("Load dex_stats:", dex_stats)
+    print("Load pool_snapshots len:", len(pool_snapshots or []))
 
     hook = PostgresHook(postgres_conn_id="postgres_default")
-    hook.insert_rows(table="dex_stats", rows=dex_stats)
-    hook.insert_rows(table="pool_snapshots", rows=pool_snapshots)
+
+    # Dex rows: captured_at, tvl_usd, volume_24h, trades_24h, users_24h
+    if dex_stats:
+        dex_rows = [
+            [
+                d["captured_at"],
+                d["tvl_usd"],
+                d["volume_24h"],
+                d["trades_24h"],
+                d["users_24h"],
+            ]
+            for d in dex_stats
+        ]
+        hook.insert_rows(table="dex_stats", rows=dex_rows)
+
+    # Pools: captured_at, pool_address, token_a, token_b, tvl_usd, volume_24h, apy, rank
+    if pool_snapshots:
+        pool_rows = [
+            [
+                p["captured_at"],
+                p["pool_address"],
+                p["token_a"],
+                p["token_b"],
+                p["tvl_usd"],
+                p["volume_24h"],
+                p["apy"],
+                p["rank"],
+            ]
+            for p in pool_snapshots
+        ]
+        hook.insert_rows(table="pool_snapshots", rows=pool_rows)
 
 
 with DAG(
